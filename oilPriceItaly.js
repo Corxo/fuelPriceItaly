@@ -30,7 +30,7 @@ const getInfo = async (lat,log)=>{
                 "method": "POST"
             }
         );
-        return call.text();
+        return call.json();
     }
     catch(err){
         throw err;
@@ -42,19 +42,56 @@ const getInfo = async (lat,log)=>{
 }
 test(); */
 
-bot.command('nearme',ctx=>{
-    //GET POSITION AND RETURN CLOSEST STATIONS SORTED BY PRICE
-    if(!ctx['update']['message']['location']){
-        ctx.reply('Missing coordinates!');
-        return;
+function addDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
+    
+    function toRadians(value) {
+        return value * Math.PI / 180
     }
-})
 
-bot.use(ctx=>{
-    console.log(ctx);
-    if(ctx['update']['message']['location'])
-        console.log(ctx['update']['message']['location']);
-    ctx.reply('test');
+    var R = 6371.0710
+    var rlat1 = toRadians(x1) // Convert degrees to radians
+    var rlat2 = toRadians(x2) // Convert degrees to radians
+    var difflat = rlat2 - rlat1 // Radian difference (latitudes)
+    var difflon = toRadians(y2 - y1) // Radian difference (longitudes)
+    return 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)))
+}
+
+bot.use(async ctx=>{
+    if(ctx['update']['message']['location']){
+        ctx.reply("Sto cercando...");
+        //TODO let timeout = setTimeout(()=>{},5000);
+        try{
+            let data = await getInfo(ctx['update']['message']['location']['latitude'], ctx['update']['message']['location']['longitude']);
+            //console.log(data);
+            data['results'].forEach(e=>{
+                e['distance'] = addDistance(
+                        {x: ctx['update']['message']['location']['latitude'], y: ctx['update']['message']['location']['longitude']},
+                        {x: e['location']['lat'], y: e['location']['lng']} 
+                    );
+                let date = new Date(e['insertDate']);
+                e['insertDate'] = `${date.getDay()}-${date.getMonth()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`
+            });
+            data['results'].sort((x,y)=>x['distance']-y['distance']);
+            
+            let cnt = 0;
+            while(cnt < (data['results'].length >= 5 ? 5 : data['results'].length)){
+                let reply = "";
+                reply += `**${data['results'][cnt]['brand']}**\n`;
+                let address = `[${data['results'][cnt]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data['results'][cnt]['address'])})`
+                reply += `⛽ ${address} (${data['results'][cnt]['distance'].toFixed(2)} km)\n`
+                reply += `🕐Ultima rilevazione: ${data['results'][cnt]['insertDate']}\n`;
+                reply += `💶 Prezzi:\n`;
+                data['results'][cnt]['fuels'].forEach(e=>reply+=`\t\t\t${e['name']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
+                ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
+                cnt++;
+            }
+        }
+        catch(err){
+            ctx.reply("Error while downloading prices");
+            console.log(err);
+            return;
+        }
+    }
 })
 
 bot.launch();
