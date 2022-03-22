@@ -1,6 +1,7 @@
 import { Telegraf, Telegram } from 'telegraf';
-import {TELEGRAM_KEY} from './env.js'
+import {TELEGRAM_KEY, PROXY_URL} from './env.js'
 import fetch from 'node-fetch';
+import HttpsProxyAgent from 'https-proxy-agent';
 
 const bot = new Telegraf(TELEGRAM_KEY);
 
@@ -8,6 +9,7 @@ const getInfo = async (lat,log)=>{
     if(!lat || !log)
         throw "Missing latitude or longitude";
     let body = {"points": [{lat: lat, lng: log}]};
+    let proxy = new HttpsProxyAgent(PROXY_URL);
     try{
         let call = await fetch(
             "https://carburanti.mise.gov.it/ospzApi/search/zone", {
@@ -23,6 +25,7 @@ const getInfo = async (lat,log)=>{
                     "Referer": "https://carburanti.mise.gov.it/ospzSearch/zona",
                     "Referrer-Policy": "strict-origin-when-cross-origin"
                 },
+                "agent": proxy,
                 "body": JSON.stringify(body),
                 "method": "POST"
             }
