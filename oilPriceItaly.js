@@ -2,6 +2,7 @@ import { Telegraf, Telegram } from 'telegraf';
 import {TELEGRAM_KEY, PROXY_URL} from './env.js'
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
+import moment from 'moment';
 
 const bot = new Telegraf(TELEGRAM_KEY);
 
@@ -37,11 +38,6 @@ const getInfo = async (lat,log)=>{
     }
 }
 
-/* async function test(){
-    console.log(await getInfo(41.890546, 12.49425));
-}
-test(); */
-
 function addDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
     
     function toRadians(value) {
@@ -56,30 +52,35 @@ function addDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
     return 2 * R * Math.asin(Math.sqrt(Math.sin(difflat / 2) * Math.sin(difflat / 2) + Math.cos(rlat1) * Math.cos(rlat2) * Math.sin(difflon / 2) * Math.sin(difflon / 2)))
 }
 
+bot.command('start',ctx=>{
+    ctx.reply(`Ciao e grazie per usare il nostro bot!\nInvia la posizione per ricevere il prezzo del carburante dei 5 distrbutori più vicini a te!`)
+})
+
 bot.use(async ctx=>{
     if(ctx['update']['message']['location']){
         ctx.reply("Sto cercando...");
         //TODO let timeout = setTimeout(()=>{},5000);
         try{
             let data = await getInfo(ctx['update']['message']['location']['latitude'], ctx['update']['message']['location']['longitude']);
-            //console.log(data);
             data['results'].forEach(e=>{
                 e['distance'] = addDistance(
                         {x: ctx['update']['message']['location']['latitude'], y: ctx['update']['message']['location']['longitude']},
                         {x: e['location']['lat'], y: e['location']['lng']} 
                     );
-                let date = new Date(e['insertDate']);
-                e['insertDate'] = `${date.getDay()}-${date.getMonth()}-${date.getFullYear()} ${date.getHours()}:${date.getMinutes()}`
             });
             data['results'].sort((x,y)=>x['distance']-y['distance']);
             
             let cnt = 0;
             while(cnt < (data['results'].length >= 5 ? 5 : data['results'].length)){
                 let reply = "";
-                reply += `**${data['results'][cnt]['brand']}**\n`;
-                let address = `[${data['results'][cnt]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data['results'][cnt]['address'])})`
-                reply += `⛽ ${address} (${data['results'][cnt]['distance'].toFixed(2)} km)\n`
-                reply += `🕐Ultima rilevazione: ${data['results'][cnt]['insertDate']}\n`;
+                reply += `*${data['results'][cnt]['brand']}*\n`;
+                let address = `[${data['results'][cnt]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data['results'][cnt]['address'])})`;
+                reply += `⛽ ${address} (${data['results'][cnt]['distance'].toFixed(2)} km)\n`;
+                let date = moment(data['results'][cnt]['insertDate']);
+                if(moment().diff(date,'days') > 2)
+                    reply += `🔴 *Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}*\n`;
+                else
+                    reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
                 reply += `💶 Prezzi:\n`;
                 data['results'][cnt]['fuels'].forEach(e=>reply+=`\t\t\t${e['name']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
                 ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
