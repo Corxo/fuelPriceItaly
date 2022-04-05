@@ -1,8 +1,16 @@
+/**
+ * TODO:
+ * Add caching system: store the data obtained from the API in /tmp/dataCache.json. When the user send the coords
+ * check the cache, if it's older then 2 hours regenerate it, otherwise use it.
+ */
+
 import { Telegraf, Telegram } from 'telegraf';
 import {TELEGRAM_KEY, PROXY_URL} from './env.js'
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
 import moment from 'moment';
+import StaticMaps from 'staticmaps';
+import { Readable } from 'stream'
 
 const bot = new Telegraf(TELEGRAM_KEY);
 
@@ -70,6 +78,10 @@ bot.use(async ctx=>{
             });
             data['results'].sort((x,y)=>x['distance']-y['distance']);
             
+
+            let options = {width: 600,height: 400};
+            let map = new StaticMaps(options);
+            let marker = {img: `/home/cri/Cloud/Progetti/oilPrice/bot/marker.png`, width: 48, height: 48}
             let cnt = 0;
             while(cnt < (data['results'].length >= 5 ? 5 : data['results'].length)){
                 let reply = "";
@@ -83,12 +95,24 @@ bot.use(async ctx=>{
                     reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
                 reply += `💶 Prezzi:\n`;
                 data['results'][cnt]['fuels'].forEach(e=>reply+=`\t\t\t${e['name']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
-                ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
+                await ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
+
+                map.addMarker({
+                    coord: [data['results'][cnt]['location']['lat'], data['results'][cnt]['location']['lng']],
+                    ...marker
+                });
                 cnt++;
             }
+            await map.render();
+            let buf = await map.image.buffer('image/png',{quality: 75});
+            //ctx.replyWithPhoto(Readable.from(buf.toString()));
+            ctx.replyWithPhoto({
+                source: Buffer.from(buf, 'base64')
+            });
+
         }
         catch(err){
-            ctx.reply("Error while downloading prices");
+            ctx.reply("Error");
             console.log(err);
             return;
         }
