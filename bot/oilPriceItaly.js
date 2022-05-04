@@ -5,18 +5,18 @@
  */
 
 import { Telegraf, Telegram } from 'telegraf';
-import {TELEGRAM_KEY, PROXY_URL} from './env.js'
+import {TELEGRAM_KEY, PROXY_URL, TELEGRAM_KEY_DEV} from './env.js'
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
 import moment from 'moment';
 import StaticMaps from 'staticmaps';
 import { Readable } from 'stream'
 
-const bot = new Telegraf(TELEGRAM_KEY);
+const bot = new Telegraf(TELEGRAM_KEY_DEV);
 
 const getInfo = async (lat,log)=>{
     if(!lat || !log)
-        throw "Missing latitude or longitude";
+        throw Error("Missing latitude or longitude");
     let body = {"points": [{lat: lat, lng: log}]};
     let proxy = new HttpsProxyAgent(PROXY_URL);
     try{
