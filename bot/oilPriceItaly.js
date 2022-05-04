@@ -12,7 +12,16 @@ import moment from 'moment';
 import StaticMaps from 'staticmaps';
 import { Readable } from 'stream'
 
-const bot = new Telegraf(TELEGRAM_KEY_DEV);
+let bot = null;
+
+if(process.argv[2] && process.argv[2] == 'TEST'){
+    bot = new Telegraf(TELEGRAM_KEY_DEV);
+    console.log("DEV");
+}
+else{
+    bot = new Telegraf(TELEGRAM_KEY);
+    console.log("PROD")
+}
 
 const getInfo = async (lat,log)=>{
     if(!lat || !log)
@@ -61,8 +70,12 @@ function addDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
 }
 
 bot.command('start',ctx=>{
-    ctx.reply(`Ciao e grazie per usare il nostro bot!\nInvia la posizione per ricevere il prezzo del carburante dei 5 distrbutori più vicini a te!`)
+    ctx.reply(`Ciao e grazie per usare il nostro bot!\nInvia la posizione per ricevere il prezzo del carburante dei 5 distrbutori più vicini a te!`);
 })
+
+bot.command('id',ctx=>{
+    console.log(ctx.message)
+})  
 
 bot.use(async ctx=>{
     if(ctx['update']['message']['location']){
