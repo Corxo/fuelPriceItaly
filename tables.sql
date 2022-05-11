@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS users(
     us_preferences JSON
 );
 
-CREATE TABLE `stations_label` (
+CREATE TABLE `flags` (
   `stl_id` int(11) NOT NULL AUTO_INCREMENT,
   `stl_label` varchar(512) NOT NULL,
   PRIMARY KEY (`stl_id`)

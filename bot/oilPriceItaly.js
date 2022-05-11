@@ -11,6 +11,7 @@ import HttpsProxyAgent from 'https-proxy-agent';
 import moment from 'moment';
 import StaticMaps from 'staticmaps';
 import { Readable } from 'stream'
+import {OilPriceData} from './db.js';
 
 let bot = null;
 
@@ -116,12 +117,11 @@ bot.use(async ctx=>{
                 });
                 cnt++;
             }
-            await map.render();
+            /*await map.render();
             let buf = await map.image.buffer('image/png',{quality: 75});
-            //ctx.replyWithPhoto(Readable.from(buf.toString()));
             ctx.replyWithPhoto({
                 source: Buffer.from(buf, 'base64')
-            });
+            }); */
 
         }
         catch(err){
