@@ -4,7 +4,7 @@
  * check the cache, if it's older then 2 hours regenerate it, otherwise use it.
  */
 
-import { Telegraf, Telegram } from 'telegraf';
+import { Telegraf } from 'telegraf';
 import {TELEGRAM_KEY, PROXY_URL, TELEGRAM_KEY_DEV, GEOAPIFY_TOKEN} from './env.js'
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
@@ -71,7 +71,7 @@ bot.command('start',ctx=>{
     ctx.reply(`Ciao e grazie per usare il nostro bot!\nInvia la posizione per ricevere il prezzo del carburante dei 5 distrbutori più vicini a te!`);
 })
 
-bot.command('id',ctx=>{
+/*bot.command('id',ctx=>{
     console.log(ctx.message)
 });
 
@@ -87,7 +87,7 @@ bot.command('carburante',async ctx=>{
 
 bot.on('callback_query', ctx=>{
     console.log(ctx['update']['callback_query']['data'])
-})
+}) */
 
 bot.use(async ctx=>{
     if(ctx['update']['message']['location']){
