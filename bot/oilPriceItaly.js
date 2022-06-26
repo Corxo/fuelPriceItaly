@@ -116,16 +116,21 @@ bot.use(async ctx=>{
                 let address = `[${data['results'][cnt]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data['results'][cnt]['address'])})`;
                 reply += `⛽ ${address} (${data['results'][cnt]['distance'].toFixed(2)} km)\n`;
                 let date = moment(data['results'][cnt]['insertDate']);
-                if(moment().diff(date,'days') > 2)
+
+                let markerColor = '00c512';
+                if(moment().diff(date,'days') > 2){
                     reply += `🔴 *Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}*\n`;
+                    markerColor = 'ff0000';
+                }
                 else
                     reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
+
                 reply += `💶 Prezzi:\n`;
                 data['results'][cnt]['fuels'].forEach(e=>reply+=`\t\t\t${e['name']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
 
                 await ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
                 
-                markers.push(`lonlat:${data['results'][cnt]['location']['lng']},${data['results'][cnt]['location']['lat']};color:%23ff0000;size:small;text:${cnt+1}`)
+                markers.push(`lonlat:${data['results'][cnt]['location']['lng']},${data['results'][cnt]['location']['lat']};color:%23${markerColor};size:small;text:${cnt+1}`)
                 cnt++;
             }
 
