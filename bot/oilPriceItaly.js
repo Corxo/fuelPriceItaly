@@ -5,13 +5,10 @@
  */
 
 import { Telegraf, Telegram } from 'telegraf';
-import {TELEGRAM_KEY, PROXY_URL, TELEGRAM_KEY_DEV, MAPBOX_TOKEN} from './env.js'
+import {TELEGRAM_KEY, PROXY_URL, TELEGRAM_KEY_DEV, GEOAPIFY_TOKEN} from './env.js'
 import fetch from 'node-fetch';
 import HttpsProxyAgent from 'https-proxy-agent';
 import moment from 'moment';
-import StaticMaps from 'staticmaps';
-import { Readable } from 'stream'
-import {OilPriceData} from './db.js';
 
 let bot = null;
 
@@ -94,7 +91,7 @@ bot.on('callback_query', ctx=>{
 
 bot.use(async ctx=>{
     if(ctx['update']['message']['location']){
-        ctx.reply("Sto cercando...");
+        await ctx.reply("Sto cercando...");
         try{
             let data = await getInfo(ctx['update']['message']['location']['latitude'], ctx['update']['message']['location']['longitude']);
             data['results'].forEach(e=>{
@@ -105,14 +102,11 @@ bot.use(async ctx=>{
             });
             data['results'].sort((x,y)=>x['distance']-y['distance']);
             
-
-            /*let options = {width: 600,height: 400};
-             let map = new StaticMaps(options);
-            let marker = {img: `/home/cri/Cloud/Progetti/oilPrice/bot/marker.png`, width: 48, height: 48} */
+            let markers = [];
             let cnt = 0;
             while(cnt < (data['results'].length >= 5 ? 5 : data['results'].length)){
                 let reply = "";
-                reply += `*${data['results'][cnt]['brand']}*\n`;
+                reply += `${cnt+1}) *${data['results'][cnt]['brand']}*\n`;
                 let address = `[${data['results'][cnt]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data['results'][cnt]['address'])})`;
                 reply += `⛽ ${address} (${data['results'][cnt]['distance'].toFixed(2)} km)\n`;
                 let date = moment(data['results'][cnt]['insertDate']);
@@ -122,24 +116,15 @@ bot.use(async ctx=>{
                     reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
                 reply += `💶 Prezzi:\n`;
                 data['results'][cnt]['fuels'].forEach(e=>reply+=`\t\t\t${e['name']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
-                await ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
 
-                /* map.addMarker({
-                    coord: [data['results'][cnt]['location']['lat'], data['results'][cnt]['location']['lng']],
-                    ...marker
-                }); */
+                await ctx.replyWithMarkdown(reply,{disable_web_page_preview: true});
+                
+                markers.push(`lonlat:${data['results'][cnt]['location']['lng']},${data['results'][cnt]['location']['lat']};color:%23ff0000;size:small;text:${cnt+1}`)
                 cnt++;
             }
-            /* await map.render();
-            let mapOptions = {
-                quality: 75, 
-                tileUrl: `https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/256/{x}/{y}/{z}?access_token=${MAPBOX_TOKEN}`
-            };
-            let buf = await map.image.buffer('image/png',mapOptions);
-            map.image.save('/tmp/map.png');
-            ctx.replyWithPhoto({
-                source: Buffer.from(buf, 'base64')
-            }); */
+
+            let url = `https://maps.geoapify.com/v1/staticmap?width=1000&height=1000&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
+            ctx.replyWithPhoto(url);
 
         }
         catch(err){
