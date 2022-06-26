@@ -18,6 +18,9 @@ class OilPriceData{
         });
     }
 
+    /**
+     * List all stations (flags) with relative ID
+     */
     async getStations(){
         await this.createConnection();
         let flags = await this._db.query("SELECT fl_id id, fl_label label FROM oilprice.flags ORDER BY 2");
