@@ -92,17 +92,23 @@ bot.on('callback_query', ctx=>{
 bot.use(async ctx=>{
     if(ctx['update']['message']['location']){
         await ctx.reply("Sto cercando...");
+        let userCoords = {
+            latitude: ctx['update']['message']['location']['latitude'],
+            longitude: ctx['update']['message']['location']['longitude']
+        }
         try{
-            let data = await getInfo(ctx['update']['message']['location']['latitude'], ctx['update']['message']['location']['longitude']);
+            let data = await getInfo(userCoords.latitude, userCoords.longitude);
             data['results'].forEach(e=>{
                 e['distance'] = addDistance(
-                        {x: ctx['update']['message']['location']['latitude'], y: ctx['update']['message']['location']['longitude']},
+                        {x: userCoords.latitude, y: userCoords.longitude},
                         {x: e['location']['lat'], y: e['location']['lng']} 
                     );
             });
             data['results'].sort((x,y)=>x['distance']-y['distance']);
             
-            let markers = [];
+            let markers = [
+                `lonlat:${userCoords.longitude},${userCoords.latitude};type:material;color:%231400ff;size:small;icon:person;iconsize:small;textsize:small`
+            ];
             let cnt = 0;
             while(cnt < (data['results'].length >= 5 ? 5 : data['results'].length)){
                 let reply = "";
