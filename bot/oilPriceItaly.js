@@ -55,9 +55,7 @@ const getInfo = async (lat,log)=>{
 
 function addDistance({ x: x1, y: y1 }, { x: x2, y: y2 }) {
     
-    function toRadians(value) {
-        return value * Math.PI / 180
-    }
+    const toRadians = value => value * Math.PI / 180;
 
     var R = 6371.0710
     var rlat1 = toRadians(x1) // Convert degrees to radians
