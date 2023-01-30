@@ -1,11 +1,11 @@
 import Update from './update.js';
 
-class UpdateStation extends Update{
+class UpdatePrices extends Update{
 
     file;
 
     constructor(){
-        super('stations');
+        super('prices');
     }
 
     async main() {
@@ -21,9 +21,9 @@ class UpdateStation extends Update{
         let idCache = new Set();
         arr.forEach(async i => {
             i = i.split(";").map(i => i != 'NULL' ? i.replace(/\"/gi, "") : '');
-            if (!!i[0] && !!i[8] && !!i[9]) {
-                if (!idCache.has(i[0]) && !isNaN(i[8]) && !isNaN(i[9]) ) {
-                    let insert = `(${i[0]},"${i[1]}","${i[2]}","${i[3]}","${i[4]}","${i[5]}","${i[6]}","${i[7]}","${i[8]}","${i[9]}")`
+            if (!!i[0]) {
+                if (!idCache.has(i[0]) && !isNaN(i[2])) {
+                    let insert = `(${i[0]},"${i[1]}",${i[2]},${i[3]},"${i[4]}")`
                     res.push(insert)
                     console.log(`Creating insert ${insert}`)
                 }
@@ -39,7 +39,7 @@ class UpdateStation extends Update{
         try {
             let inserts = this.prepareInsertValues();
             inserts.forEach(i => {
-                let query = `REPLACE INTO stations VALUES ${i}`;
+                let query = `REPLACE INTO prices VALUES ${i}`;
                 this.db.run(query, (err) => {
                     console.error(err, query)
                     if (err)
@@ -54,5 +54,5 @@ class UpdateStation extends Update{
 
 }
 
-let us = new UpdateStation();
+let us = new UpdatePrices();
 us.main();
