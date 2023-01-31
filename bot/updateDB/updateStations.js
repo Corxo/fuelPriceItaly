@@ -1,10 +1,10 @@
 import Update from './update.js';
 
-class UpdateStation extends Update{
+class UpdateStation extends Update {
 
     file;
 
-    constructor(){
+    constructor() {
         super('stations');
     }
 
@@ -22,31 +22,27 @@ class UpdateStation extends Update{
         arr.forEach(async i => {
             i = i.split(";").map(i => i != 'NULL' ? i.replace(/\"/gi, "") : '');
             if (!!i[0] && !!i[8] && !!i[9]) {
-                if (!idCache.has(i[0]) && !isNaN(i[8]) && !isNaN(i[9]) ) {
+                if (!idCache.has(i[0]) && !isNaN(i[8]) && !isNaN(i[9])) {
                     let insert = `(${i[0]},"${i[1]}","${i[2]}","${i[3]}","${i[4]}","${i[5]}","${i[6]}","${i[7]}","${i[8]}","${i[9]}")`
                     res.push(insert)
                     console.log(`Creating insert ${insert}`)
-                }
-                else
+                } else
                     idCache.add(i[0])
             }
         })
 
-        return res;
+        return res.join(",");
     }
 
     updateDB() {
         try {
             let inserts = this.prepareInsertValues();
-            inserts.forEach(i => {
-                let query = `REPLACE INTO stations VALUES ${i}`;
-                this.db.run(query, (err) => {
-                    console.error(err, query)
-                    if (err)
-                        throw new Error(err)
-                });
-                console.log(query)
-            })
+            let query = `REPLACE INTO stations VALUES ${inserts}`;
+            this.db.run(query, (err) => {
+                console.error(err, query)
+                if (err)
+                    throw new Error(err)
+            });
         } catch (err) {
             console.log(err)
         }

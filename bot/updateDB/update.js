@@ -14,6 +14,7 @@ export default class Update{
             console.error(`Type ${type} not handled`)
         }
 
+
         switch(type){
             case 'stations':
                 this.url = "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
@@ -23,12 +24,13 @@ export default class Update{
         }
 
         this.db = new sqlite3.Database(DB_PATH);
+        this.db.run(this._getCreateTable());
     }
 
     _getCreateTable(){
         switch(this.table){
             case 'stations':
-                return `CREATE TABLE stations(
+                return `CREATE TABLE IF NOT EXISTS stations(
                     idStation int NOT NULL PRIMARY KEY,
                     company varchar(500),
                     flag varchar(50),
