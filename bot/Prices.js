@@ -11,31 +11,25 @@ export default class Prices {
 
     getPriceFromCloserStations(lat, log, nRes = 5) {
         let query = `
-            SELECT 
-                p.idStation, 
-                fuel, 
-                price, 
-                isSelf, 
-                tsCattura, 
-                flag, 
-                address, 
-                municipality, 
-                province, 
-                lat, 
-                log,
-                SQRT(POW(69.1 * (lat - ${lat}), 2) + POW(69.1 * (${log} - log) * COS(lat / 57.3), 2)) distance 
-            FROM prices p
-            JOIN stations s ON p.idStation = s.idStation  
-            WHERE p.idStation IN (
-                SELECT s.idStation
-                FROM stations s
-                JOIN prices p on s.idStation = p.idStation 
-                GROUP by s.idStation
-                ORDER by SQRT(POW(69.1 * (lat - ${lat}), 2) + POW(69.1 * (${log} - log) * COS(lat / 57.3), 2)), tsCattura 
-                LIMIT ${nRes}
-            )
-            GROUP BY p.idStation, fuel, isSelf
-            ORDER BY tsCattura desc
+                SELECT
+                    p.idStation, fuel, price, isSelf, tsCattura, flag, address, municipality, province, lat, log, p2.distance
+                FROM
+                    prices p
+                JOIN stations s ON p.idStation = s.idStation 	
+                JOIN (
+                    SELECT
+                        s.idStation,
+                        SQRT(POW(69.1 * (lat - ${lat}), 2) + POW(69.1 * (${log} - log) * COS(lat / 57.3), 2)) distance
+                    FROM
+                        stations s
+                    JOIN prices p ON s.idStation = p.idStation
+                    GROUP BY s.idStation
+                    ORDER BY distance, tsCattura desc
+                    LIMIT 5
+                ) p2
+                WHERE p.idStation IN (p2.idStation)
+                GROUP BY p.idStation, fuel, isSelf
+                ORDER BY tsCattura DESC
         `;
 
         return new Promise((res, rej) =>
@@ -50,7 +44,7 @@ export default class Prices {
     _parseData(data) {
         let d = {};
         data.forEach(r => {
-            d[r.idStation] = d[r.idStation] ?? [];
+            d[r.idStation] = d[r.idStation] ? ? [];
 
             if (!d[r.idStation]['fuels'])
                 d[r.idStation]['fuels'] = [];
