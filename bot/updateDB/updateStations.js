@@ -1,4 +1,5 @@
 import Update from './update.js';
+import Notifier from './notifier.js';
 
 class UpdateStation extends Update {
 
@@ -46,6 +47,9 @@ class UpdateStation extends Update {
         } catch (err) {
             console.log(err)
         }
+
+        let notifier = new Notifier(0);
+        notifier.tableUpdateTerminated('stations');
     }
 
 }

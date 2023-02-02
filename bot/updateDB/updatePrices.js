@@ -1,3 +1,4 @@
+import Notifier from './notifier.js';
 import Update from './update.js';
 
 class UpdatePrices extends Update {
@@ -40,6 +41,9 @@ class UpdatePrices extends Update {
         } catch (err) {
             console.log(err)
         }
+
+        let notifier = new Notifier(0);
+        notifier.tableUpdateTerminated('prices');
     }
 
 }
