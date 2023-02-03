@@ -24,8 +24,9 @@ RUN npm install --force
 RUN node /data/update/updatePrices.js
 RUN node /data/update/updateStations.js
 
-RUN echo "10 8 * * * /data/update/updatePrices.js" >> /tmp/cron
-RUN echo "10 8 * * * /data/update/updateStations.js" >> /tmp/cron
+RUN /usr/sbin/crond
+RUN echo "10 8 * * * node /data/update/updatePrices.js" >> /tmp/cron
+RUN echo "10 8 * * * node /data/update/updateStations.js" >> /tmp/cron
 RUN crontab /tmp/cron
 
 
