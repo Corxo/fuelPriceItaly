@@ -10,7 +10,7 @@ class UpdateStation extends Update {
     }
 
     async main() {
-        this.file = await this.getFile();
+        this.file = await this.getFile(); 
         this.updateDB()
     }
 
