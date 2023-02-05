@@ -1,16 +1,15 @@
-#from alpine:latest
 from node:alpine
 
-#RUN apk add --update nodejs npm
 RUN mkdir /data
 
-
-#RUN apt install sqlite3 -y
 RUN apk update \
-    && apk upgrade \
-    && apk --no-cache add dcron libcap tzdata
+   && apk upgrade \
+   && apk --no-cache add dcron libcap tzdata openrc
 
 RUN cp /usr/share/zoneinfo/Europe/Rome /etc/localtime
+
+#RUN apt update && apt install -y systemd
+#RUN timedatectl set-timezone Europe/Rome
 
 COPY oilPriceItaly.js /data/
 COPY Prices.js /data/
@@ -24,10 +23,10 @@ RUN npm install --force
 RUN node /data/update/updatePrices.js
 RUN node /data/update/updateStations.js
 
-RUN /usr/sbin/crond
+#RUN /usr/sbin/crond -f
 RUN echo "10 8 * * * node /data/update/updatePrices.js" >> /tmp/cron
 RUN echo "10 8 * * * node /data/update/updateStations.js" >> /tmp/cron
 RUN crontab /tmp/cron
 
-
-ENTRYPOINT ["node","/data/oilPriceItaly.js"];
+#ENTRYPOINT ["/usr/sbin/crond", "&&", "node","/data/oilPriceItaly.js"];
+CMD /usr/sbin/crond && node /data/oilPriceItaly.js
