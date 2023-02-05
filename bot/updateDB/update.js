@@ -23,7 +23,7 @@ export default class Update{
                 this.url = "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv"
         }
 
-        this.db = new sqlite3.Database(DB_PATH);
+        this.db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
         this.db.run(this._getCreateTable());
     }
 
