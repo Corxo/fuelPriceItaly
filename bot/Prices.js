@@ -6,6 +6,7 @@ import {
 export default class Prices {
 
     db = new sqlite3.Database(DB_PATH);
+    pricesFromCloserStations = [];
 
     constructor() {}
 
@@ -37,6 +38,7 @@ export default class Prices {
             this.db.all(query, (err, rows) => {
                 if (err)
                     rej(err);
+                this.pricesFromCloserStations = rows;
                 res(this._parseData(rows));
             })
         );
@@ -50,6 +52,7 @@ export default class Prices {
             if (!d[r.idStation]['fuels'])
                 d[r.idStation]['fuels'] = [];
 
+            d[r.idStation]['id'] = r.idStation;
             d[r.idStation]['flag'] = r.flag;
             d[r.idStation]['address'] = r.address;
             d[r.idStation]['municipality'] = r.municipality;
@@ -67,7 +70,21 @@ export default class Prices {
         return d;
     }
 
-    getData() {
-
+    getLowerPricerPerStation() {
+        let res = {};
+        this.pricesFromCloserStations.forEach(d => {
+            let key = `${d.fuel}_${d.isSelf}`
+                if (!res[key])
+                    res[key] = {
+                        station: d.idStation,
+                        price: d.price
+                    };
+                else if (d.price < res[key].price)
+                    res[key] = {
+                        station: d.idStation,
+                        price: d.price
+                    };
+        })
+        return res;
     }
 }

@@ -46,6 +46,7 @@ bot.use(async ctx => {
         try {
 
             let data = await prices.getPriceFromCloserStations(userCoords.latitude, userCoords.longitude);
+            let minPrices = prices.getLowerPricerPerStation(data);
 
             let msg = [];
             let cnt = 0;
@@ -69,7 +70,10 @@ bot.use(async ctx => {
                     reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
 
                 reply += `💶 Prezzi:\n`;
-                data[k]['fuels'].forEach(e => reply += `\t\t\t${e['fuel']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€\n`);
+                data[k]['fuels'].forEach(e =>{
+                    let signLowerPrice = minPrices[`${e['fuel']}_${e['isSelf'] ? 1 : 0}`].station == data[k]['id'] ? ' 💰' : ''
+                    reply += `\t\t\t${e['fuel']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€${signLowerPrice}\n`
+                });
 
                 msg.push(reply);
                 markers.push(`lonlat:${data[k]['log']},${data[k]['lat']};color:%23${markerColor};size:small;text:${cnt+1}`)
