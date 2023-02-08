@@ -1,6 +1,7 @@
 from node:alpine
 
 RUN mkdir /data
+RUN mkdir /db
 
 RUN apk update \
    && apk upgrade \
