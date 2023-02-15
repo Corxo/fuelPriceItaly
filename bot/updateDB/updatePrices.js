@@ -1,17 +1,26 @@
 import Notifier from './notifier.js';
 import Update from './update.js';
+import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 
 class UpdatePrices extends Update {
 
     file;
+    parser;
 
     constructor() {
         super('prices');
+        this.parser = dayjs;
+        this.parser.extend(customParseFormat)
     }
 
     async main() {
         this.file = await this.getFile();
         this.updateDB()
+    }
+
+    _parseDate(date){
+        return this.parser(date, "DD/MM/YYYY HH:mm:SS").format("YYYY-MM-DD HH:mm:ss")
     }
 
     prepareInsertValues() {
@@ -22,7 +31,8 @@ class UpdatePrices extends Update {
         arr.forEach(async i => {
             i = i.split(";").map(i => i != 'NULL' ? i.replace(/\"/gi, "") : '');
             if (!!i[0]) {
-                let insert = `(${i[0]},"${i[1]}",${i[2]},${i[3]},"${i[4]}")`
+                let date = this._parseDate(i[4]);
+                let insert =    `(${i[0]},"${i[1]}",${i[2]},${i[3]},"${date}")`
                 res.push(insert);
             }
         })

@@ -47,7 +47,8 @@ export default class Update{
                     fuel varchar(100) NOT NULL,
                     price float NOT NULL,
                     isSelf int(1) NOT NULL,
-                    tsCattura timestamp NOT NULL
+                    tsCattura DATETIME NOT NULL,
+                    UNIQUE(idStation, fuel, isSelf, tsCattura)
                 );`
         }
     }
