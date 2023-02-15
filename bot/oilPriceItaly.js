@@ -60,7 +60,7 @@ bot.use(async ctx => {
                 let address = `[${data[k]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data[k]['address'])}) (${data[k]['distance']}km)`;
                 //reply += `⛽ ${address} (${data[k]['distance'].toFixed(2)} km)\n`;
                 reply += `⛽ ${address}\n`;
-                let date = dayjs(data[k]['tsCattura'],"DD/MM/YYYY HH:mm:ss");
+                let date = dayjs(data[k]['tsCattura'],"YYYY-MM-DD HH:mm:ss");
 
                 let markerColor = '00c512';
                 if (dayjs().diff(date, 'days') > 3) {
