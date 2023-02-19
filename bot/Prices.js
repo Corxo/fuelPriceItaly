@@ -14,7 +14,7 @@ export default class Prices {
         let conv = unit == 'km' ? 111.045 : 69.1;
         let query = `
                 SELECT
-                    p.idStation, fuel, price, isSelf, tsCattura, flag, address, municipality, province, lat, log, p2.distance
+                    p.idStation, fuel, price, isSelf, MAX(tsCattura) tsCattura, flag, address, municipality, province, lat, log, p2.distance
                 FROM
                     prices p
                 JOIN stations s ON p.idStation = s.idStation 	
@@ -26,10 +26,10 @@ export default class Prices {
                         stations s
                     JOIN prices p ON s.idStation = p.idStation
                     GROUP BY s.idStation
-                    ORDER BY distance, tsCattura DESC
-                    LIMIT 5
+                    ORDER BY distance
+                    LIMIT ${nRes}
                 ) p2
-                WHERE p.idStation IN (p2.idStation)
+                ON p.idStation = p2.idStation
                 GROUP BY p.idStation, fuel, isSelf
                 ORDER BY distance
         `;
