@@ -21,6 +21,8 @@ COPY package.json /data/
 WORKDIR /data
 RUN npm install --force
 
+RUN node /data/init.js
+
 RUN node /data/update/updatePrices.js
 RUN node /data/update/updateStations.js
 

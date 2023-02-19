@@ -21,9 +21,10 @@ CREATE TABLE stations(
 
 --USERS DATA
 CREATE TABLE IF NOT EXISTS users(
-    us_id BIGINT NOT NULL,
+    id BIGINT NOT NULL PRIMARY KEY,
     us_ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    us_preferences JSON
+    showMap TINYINT(1) NOT NULL DEFAULT 0,
+    preferences JSON
 );
 
 CREATE TABLE `flags` (

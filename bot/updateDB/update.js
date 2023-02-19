@@ -24,33 +24,6 @@ export default class Update{
         }
 
         this.db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
-        this.db.run(this._getCreateTable());
-    }
-
-    _getCreateTable(){
-        switch(this.table){
-            case 'stations':
-                return `CREATE TABLE IF NOT EXISTS stations(
-                    idStation int NOT NULL PRIMARY KEY,
-                    company varchar(500),
-                    flag varchar(50),
-                    'type' varchar(500),
-                    name varchar(500),
-                    address varchar(1000) NOT NULL,
-                    municipality varchar(1000) NOT NULL,
-                    province varchar(2),
-                    lat varchar(100),
-                    log varchar(100));`
-            case 'prices':
-                return `CREATE TABLE IF NOT EXISTS 'prices'(
-                    idStation int NOT NULL,
-                    fuel varchar(100) NOT NULL,
-                    price float NOT NULL,
-                    isSelf int(1) NOT NULL,
-                    tsCattura DATETIME NOT NULL,
-                    UNIQUE(idStation, fuel, isSelf, tsCattura)
-                );`
-        }
     }
 
     cleanTable(){
