@@ -13,6 +13,7 @@ RUN cp /usr/share/zoneinfo/Europe/Rome /etc/localtime
 #RUN timedatectl set-timezone Europe/Rome
 
 COPY oilPriceItaly.js /data/
+COPY init.js /data/
 COPY Prices.js /data/
 COPY updateDB/*.js /data/update/
 COPY env.js /data/

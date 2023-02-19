@@ -9,7 +9,7 @@ This file contain various script to create the dafult tables and prepare the env
 
 */
 
-const DB = new sqlite3.Database(DB_PATH);
+const DB = new sqlite3.Database(DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
 
 function createTables() {
 

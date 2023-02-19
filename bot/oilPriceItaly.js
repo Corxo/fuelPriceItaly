@@ -5,7 +5,8 @@
  */
 
 import {
-    Telegraf
+    Telegraf,
+    Markup
 } from 'telegraf';
 import {
     TELEGRAM_KEY,
@@ -16,6 +17,12 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 
 import Prices from './Prices.js';
+
+import {
+    User,
+    Preferences
+} from './UserData.js'
+
 
 let bot = null;
 dayjs.extend(customParseFormat)
@@ -31,10 +38,25 @@ if (process.argv[2] && process.argv[2] == 'TEST') {
 }
 
 
-bot.command('start', ctx => {
+bot.command('start', async ctx => {
+    let user = new User(ctx.from.id);
+    user.addUser();
+
     ctx.reply(`Ciao e grazie per usare il nostro bot!\nInvia la posizione per ricevere il prezzo del carburante dei 5 distrbutori più vicini a te!`);
 })
 
+bot.command('setFlag', async ctx => {
+    let message = "Seleziona uno dei seguenti marchi";
+    let flags = await prices.getMajorBrands();
+
+    ctx.reply(message, Markup.inlineKeyboard(flags.map(f => {
+        return [Markup.button.callback(f, f)];
+    })))
+})
+
+bot.on('callback_query', query => {
+    console.log(query)
+})
 
 bot.use(async ctx => {
     if (ctx['update']['message']['location']) {
@@ -54,13 +76,13 @@ bot.use(async ctx => {
             let markers = [
                 `lonlat:${userCoords.longitude},${userCoords.latitude};type:material;color:%231400ff;size:small;icon:person;iconsize:small;textsize:small`
             ];
-            Object.keys(data).sort((a,b)=>data[a]['distance'] - data[b]['distance']).forEach(k => {
+            Object.keys(data).sort((a, b) => data[a]['distance'] - data[b]['distance']).forEach(k => {
                 let reply = "";
                 reply += `${cnt+1}) *${data[k]['flag']}*\n`;
                 let address = `[${data[k]['address']}](https://maps.google.it/maps?hl=it&q=${encodeURI(data[k]['address'])}) (${data[k]['distance']}km)`;
                 //reply += `⛽ ${address} (${data[k]['distance'].toFixed(2)} km)\n`;
                 reply += `⛽ ${address}\n`;
-                let date = dayjs(data[k]['tsCattura'],"YYYY-MM-DD HH:mm:ss");
+                let date = dayjs(data[k]['tsCattura'], "YYYY-MM-DD HH:mm:ss");
 
                 let markerColor = '00c512';
                 if (dayjs().diff(date, 'days') > 3) {
@@ -70,20 +92,22 @@ bot.use(async ctx => {
                     reply += `🟢 Ultima rilevazione: ${date.format('DD-MM-YYYY HH:mm')}\n`;
 
                 reply += `💶 Prezzi:\n`;
-                data[k]['fuels'].forEach(e =>{
+                data[k]['fuels'].forEach(e => {
                     let signLowerPrice = minPrices[`${e['fuel']}_${e['isSelf'] ? 1 : 0}`].station == data[k]['id'] ? ' 💰' : ''
                     reply += `\t\t\t${e['fuel']}${e['isSelf'] ? ' (Self): ' : ': '} ${e['price']}€${signLowerPrice}\n`
                 });
 
                 msg.push(reply);
                 markers.push(`lonlat:${data[k]['log']},${data[k]['lat']};color:%23${markerColor};size:small;text:${cnt+1}`)
-                cnt+=1;
+                cnt += 1;
             })
 
-            for(let m of msg){
-                await ctx.replyWithMarkdown(m, {disable_web_page_preview: true})
+            for (let m of msg) {
+                await ctx.replyWithMarkdown(m, {
+                    disable_web_page_preview: true
+                })
             }
-            
+
             let url = `https://maps.geoapify.com/v1/staticmap?width=512&height=512&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
             ctx.replyWithPhoto(url);
 

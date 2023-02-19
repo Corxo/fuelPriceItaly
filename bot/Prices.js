@@ -44,6 +44,18 @@ export default class Prices {
         );
     }
 
+    getMajorBrands(){
+        let query = "SELECT flag FROM stations GROUP BY flag HAVING COUNT(flag) > 100 ORDER BY COUNT(flag) DESC LIMIT 10;";
+
+        return new Promise((res,rej)=>{
+            this.db.all(query,(err,rows)=>{
+                if(err)
+                    rej(err);
+                res(rows.map(r=>r['flag']))
+            })
+        })
+    }
+
     _parseData(data) {
         let d = {};
         data.forEach(r => {

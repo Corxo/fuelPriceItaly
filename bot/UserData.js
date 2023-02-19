@@ -19,7 +19,7 @@ class User{
 
         defaultPrefences = JSON.stringify(defaultPrefences);
 
-        let query = `INSERT IGNORE INTO users (id, preferences) VALUES (${this.userId},'${defaultPrefences}')`;
+        let query = `INSERT OR IGNORE INTO users (id, preferences) VALUES (${this.userId},'${defaultPrefences}')`;
 
         this.db.run(query);
 
