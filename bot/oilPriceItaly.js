@@ -49,9 +49,7 @@ bot.command('setFlag', async ctx => {
     let message = "Seleziona uno dei seguenti marchi";
     let flags = await prices.getMajorBrands();
 
-    ctx.reply(message, Markup.inlineKeyboard(flags.map(f => {
-        return [Markup.button.callback(f, f)];
-    })))
+    ctx.reply(message, Markup.inlineKeyboard(flags.map(f => [Markup.button.callback(f, f)])));
 })
 
 bot.on('callback_query', query => {
@@ -65,6 +63,7 @@ bot.use(async ctx => {
             latitude: ctx['update']['message']['location']['latitude'],
             longitude: ctx['update']['message']['location']['longitude']
         }
+        let userPref = new Preferences(ctx.from.id);
         try {
 
             let data = await prices.getPriceFromCloserStations(userCoords.latitude, userCoords.longitude);
@@ -108,8 +107,15 @@ bot.use(async ctx => {
                 })
             }
 
-            let url = `https://maps.geoapify.com/v1/staticmap?width=512&height=512&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
-            ctx.replyWithPhoto(url);
+
+            try {
+                if (await userPref.showStationsMap()) {
+                    let url = `https://maps.geoapify.com/v1/staticmap?width=512&height=512&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
+                    ctx.replyWithPhoto(url);
+                }
+            } catch (err) {
+                console.error(err);
+            }
 
         } catch (err) {
             ctx.reply("Error");

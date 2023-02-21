@@ -38,7 +38,7 @@ function createTables() {
 
     //USERS
     DB.run(`CREATE TABLE IF NOT EXISTS users(
-        id BIGINT NOT NULL PRIMARY KEY,
+        id CHAR(32) NOT NULL PRIMARY KEY,
         us_ts TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         showMap TINYINT(1) NOT NULL DEFAULT 0,
         preferences JSON

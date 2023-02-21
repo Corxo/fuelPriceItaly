@@ -2,6 +2,7 @@ import sqlite3 from "sqlite3";
 import {
     DB_PATH
 } from "./env.js";
+import * as crypto from 'crypto'
 
 class User{
 
@@ -9,7 +10,7 @@ class User{
     userId;
 
     constructor(userId){
-        this.userId = userId;
+        this.userId = crypto.createHash('md5').update(userId.toString()).digest('hex');
     }
 
     addUser(){
@@ -19,7 +20,7 @@ class User{
 
         defaultPrefences = JSON.stringify(defaultPrefences);
 
-        let query = `INSERT OR IGNORE INTO users (id, preferences) VALUES (${this.userId},'${defaultPrefences}')`;
+        let query = `INSERT OR IGNORE INTO users (id, preferences) VALUES ('${this.userId}','${defaultPrefences}')`;
 
         this.db.run(query);
 
@@ -39,18 +40,18 @@ class Preferences{
     userId;
 
     constructor(userId){
-        this.userId = userId;
+        this.userId = crypto.createHash('md5').update(userId.toString()).digest('hex');
     }
 
     showStationsMap(){
         return new Promise((res,rej)=>{
-            this.db.run(`SELECT showMap FROM users WHERE id = ${this.userId}`,(err, row)=>{
+            this.db.all(`SELECT showMap FROM users WHERE id = '${this.userId}'`,(err, row)=>{
                 if(err)
                     rej(err);
                 if(row.length == 0)
                     res(false);
-                if(row[0]['showMap'] == 1)
-                    res(true);
+                
+                row[0]['showMap'] == 1 ? res(true) : res(false);
             })
         })
     }
