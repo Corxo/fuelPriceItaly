@@ -52,8 +52,19 @@ bot.command('setFlag', async ctx => {
     ctx.reply(message, Markup.inlineKeyboard(flags.map(f => [Markup.button.callback(f, f)])));
 })
 
+bot.command('preferences', ctx =>{
+    let preferences = [
+        [
+            Markup.button.callback('Compagnia','setPref_setFlag'),
+            Markup.button.callback('Reset compagnia','setPref_resetFlag')
+        ]
+    ]  
+    //TODO add class Message to handle the various callbacks
+    ctx.reply('Seleziona un valore da cambiare', Markup.inlineKeyboard(preferences))
+})
+
 bot.on('callback_query', query => {
-    console.log(query)
+    console.log(query) 
 })
 
 bot.use(async ctx => {
