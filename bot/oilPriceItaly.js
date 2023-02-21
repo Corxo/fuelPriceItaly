@@ -119,19 +119,16 @@ bot.use(async ctx => {
             }
 
 
-            try {
-                if (await userPref.showStationsMap()) {
-                    let url = `https://maps.geoapify.com/v1/staticmap?width=512&height=512&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
-                    ctx.replyWithPhoto(url);
-                }
-            } catch (err) {
-                console.error(err);
+            
+            if (await userPref.showStationsMap()) {
+                let url = `https://maps.geoapify.com/v1/staticmap?width=512&height=512&apiKey=${GEOAPIFY_TOKEN}&marker=${markers.join("|")}`;
+                ctx.replyWithPhoto(url);
             }
 
         } catch (err) {
             ctx.reply("Error");
             console.log(err);
-            return;
+            //return;
         }
     }
 })
