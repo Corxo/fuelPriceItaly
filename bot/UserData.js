@@ -55,6 +55,19 @@ class Preferences{
             })
         })
     }
+
+    handlePreferences(pref, data){
+        switch(pref){
+            case 'setFlag':
+            case 'resetFlag':
+                this._setFlag(data ?? "");
+                break;
+        }
+    }
+
+    _setFlag(flag){
+        let query = `UPDATE users SET preferences = JSON_SET(preferences, '$.flag', '${flag}') WHERE id = '${this.userId}'`
+    }
 }
 
 export {
