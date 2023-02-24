@@ -3,6 +3,8 @@ import {
     DB_PATH
 } from "./env.js";
 import * as crypto from 'crypto'
+import Prices from "./Prices.js";
+import {Markup} from 'telegraf';
 
 class User{
 
@@ -37,10 +39,12 @@ class User{
 class Preferences{
     
     db = new sqlite3.Database(DB_PATH);
+    botInstance;
     userId;
 
-    constructor(userId){
+    constructor(userId, botInstance){
         this.userId = crypto.createHash('md5').update(userId.toString()).digest('hex');
+        this.botInstance = botInstance
     }
 
     showStationsMap(){
@@ -56,17 +60,48 @@ class Preferences{
         })
     }
 
-    handlePreferences(pref, data){
+    /**
+     * This function generate and send the message containing the options about a specific preference
+     * @param {String} preferences 
+     */
+    async showPreferences(preferences){
+        switch(preferences){
+            case 'setFlag':
+                let price = new Prices();
+                let brands = await price.getMajorBrands();
+                this.botInstance.reply("Seleziona un brand",Markup.inlineKeyboard(
+                    brands.map(b=>[Markup.button.callback(b,"setPrefData_setFlag_"+b)]))
+                )
+                break;
+        }
+        this.botInstance.answerCbQuery()
+    }
+
+
+    handlePreferencesData(pref, data){
         switch(pref){
             case 'setFlag':
             case 'resetFlag':
                 this._setFlag(data ?? "");
+                this.botInstance.answerCbQuery();
                 break;
         }
     }
 
-    _setFlag(flag){
+    async _setFlag(flag){
         let query = `UPDATE users SET preferences = JSON_SET(preferences, '$.flag', '${flag}') WHERE id = '${this.userId}'`
+        try{
+            this.db.run(query);
+            let message;
+            if(flag)
+                message = `Compagnia ${flag} impostata con successo`;
+            else
+                message = `Rimossa stazione prefererita`;
+            this.botInstance.reply(message);
+        }
+        catch(err){
+            console.error(err)
+        }
     }
 }
 

@@ -56,7 +56,7 @@ bot.command('preferences', ctx =>{
     let preferences = [
         [
             Markup.button.callback('Compagnia','setPref_setFlag'),
-            Markup.button.callback('Reset compagnia','setPref_resetFlag')
+            Markup.button.callback('Reset compagnia','setPrefData_resetFlag')
         ]
     ]  
     //TODO add class Message to handle the various callbacks
@@ -64,7 +64,16 @@ bot.command('preferences', ctx =>{
 })
 
 bot.on('callback_query', query => {
-    console.log(query) 
+    let callback = query.callbackQuery.data.split("_");
+    let pref = new Preferences(query.from.id, query);
+
+    if(callback[0] == 'setPrefData')
+        pref.handlePreferencesData(callback[1], callback[2] ?? null);
+
+
+    if(callback[0] == 'setPref'){
+        pref.showPreferences(callback[1]);
+    }
 })
 
 bot.use(async ctx => {
