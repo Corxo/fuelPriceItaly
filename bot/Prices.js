@@ -2,16 +2,23 @@ import sqlite3 from "sqlite3";
 import {
     DB_PATH
 } from "./env.js";
+import * as crypto from 'crypto'
+import {Preferences} from './UserData.js'
+
 
 export default class Prices {
 
     db = new sqlite3.Database(DB_PATH);
     pricesFromCloserStations = [];
 
-    constructor() {}
+    constructor(userId, ctx) {
+        this.userId = crypto.createHash('md5').update(userId.toString()).digest('hex');
+        this.ctx = ctx;
+    }
 
-    getPriceFromCloserStations(lat, log, nRes = 5, unit = 'km') {
+    async getPriceFromCloserStations(lat, log, nRes = 5, unit = 'km') {
         let conv = unit == 'km' ? 111.045 : 69.1;
+        let where = await this.getWhere();
         let query = `
                 SELECT
                     p.idStation, fuel, price, isSelf, MAX(tsCattura) tsCattura, flag, address, municipality, province, lat, log, p2.distance
@@ -25,6 +32,7 @@ export default class Prices {
                     FROM
                         stations s
                     JOIN prices p ON s.idStation = p.idStation
+                    ${where}
                     GROUP BY s.idStation
                     ORDER BY distance
                     LIMIT ${nRes}
@@ -42,6 +50,19 @@ export default class Prices {
                 res(this._parseData(rows));
             })
         );
+    }
+
+    async getWhere(){
+        let pref = new Preferences(this.ctx.from.id);
+        let preferences = await pref.getPreferences();
+        preferences = JSON.parse(preferences['preferences']);
+        let prefItem = [];
+        for(let k of Object.keys(preferences)){
+            if(!!preferences[k])
+                prefItem.push(`${k} = '${preferences[k]}'`)
+        }
+
+        return prefItem.length > 0 ? "WHERE "+prefItem.join(" AND ") : "";
     }
     
     getMajorBrands(){

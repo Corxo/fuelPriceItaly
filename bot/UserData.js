@@ -47,6 +47,18 @@ class Preferences{
         this.botInstance = botInstance
     }
 
+    getPreferences(){
+        return new Promise((res,rej)=>{
+            this.db.all(`SELECT preferences FROM users WHERE id = '${this.userId}'`,(err, row)=>{
+                if(err)
+                    rej(err);
+                if(row.length == 0)
+                    res({});
+                res(row[0]);
+            })
+        })
+    }
+
     showStationsMap(){
         return new Promise((res,rej)=>{
             this.db.all(`SELECT showMap FROM users WHERE id = '${this.userId}'`,(err, row)=>{
@@ -67,7 +79,7 @@ class Preferences{
     async showPreferences(preferences){
         switch(preferences){
             case 'setFlag':
-                let price = new Prices();
+                let price = new Prices(this.botInstance.from.id);
                 let brands = await price.getMajorBrands();
                 this.botInstance.reply("Seleziona un brand",Markup.inlineKeyboard(
                     brands.map(b=>[Markup.button.callback(b,"setPrefData_setFlag_"+b)]))

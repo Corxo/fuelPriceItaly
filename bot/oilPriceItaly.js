@@ -27,8 +27,6 @@ import {
 let bot = null;
 dayjs.extend(customParseFormat)
 
-const prices = new Prices();
-
 if (process.argv[2] && process.argv[2] == 'TEST') {
     bot = new Telegraf(TELEGRAM_KEY_DEV);
     console.log("DEV");
@@ -46,6 +44,7 @@ bot.command('start', async ctx => {
 })
 
 bot.command('setFlag', async ctx => {
+    let prices = new Prices();
     let message = "Seleziona uno dei seguenti marchi";
     let flags = await prices.getMajorBrands();
 
@@ -84,9 +83,10 @@ bot.use(async ctx => {
             longitude: ctx['update']['message']['location']['longitude']
         }
         let userPref = new Preferences(ctx.from.id);
+        let prices = new Prices(ctx.from.id, ctx);
         try {
 
-            let data = await prices.getPriceFromCloserStations(userCoords.latitude, userCoords.longitude);
+            let data = await prices.getPriceFromCloserStations(userCoords.latitude, userCoords.longitude, 5);
             let minPrices = prices.getLowerPricerPerStation(data);
 
             let msg = [];
