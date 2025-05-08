@@ -19,7 +19,7 @@ class UpdatePrices extends Update {
         this.updateDB();
     }
 
-    private _parseDate(date: string): string {
+    private parseDate(date: string): string {
         return this.parser(date, "DD/MM/YYYY HH:mm:SS").format("YYYY-MM-DD HH:mm:ss");
     }
 
@@ -31,7 +31,7 @@ class UpdatePrices extends Update {
         arr.forEach((i: any) => {
             i = i.split(";").map(i => i !== 'NULL' ? i.replace(/\"/gi, "") : '');
             if (!!i[0]) {
-                let date = this._parseDate(i[4]);
+                let date = this.parseDate(i[4]);
                 let insert = `(${i[0]},"${i[1]}",${i[2]},${i[3]},"${date}")`;
                 res.push(insert);
             }
