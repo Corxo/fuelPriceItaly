@@ -1,16 +1,14 @@
 {
     "compilerOptions": {
-      "target": "ES2020",                
-      "module": "CommonJS",              
+      "target": "es6",                
+      "module": "commonjs",              
       "strict": true,                    
       "esModuleInterop": true,           
       "forceConsistentCasingInFileNames": true,
       "skipLibCheck": true,
       "outDir": "./dist",                
       "rootDir": ".",
-      "noImplicitAny": false,
-      "allowImportingTsExtensions": true,
-      "noEmit": true
+      "noImplicitAny": false
     },
     "include": ["."],                  
     "exclude": ["node_modules", "dist"]  

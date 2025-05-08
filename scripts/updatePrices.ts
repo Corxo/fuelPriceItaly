@@ -1,6 +1,6 @@
 // filepath: /fuelPriceItaly/scripts/updatePrices.ts
 //import Notifier from './notifier.js';
-import Update from './update.ts'
+import Update from './update';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 

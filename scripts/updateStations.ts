@@ -1,4 +1,4 @@
-import Update from './update.ts';
+import Update from './update';
 
 class UpdateStation extends Update {
     file!: string;
