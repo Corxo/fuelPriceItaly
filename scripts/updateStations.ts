@@ -1,7 +1,7 @@
 import Update from './update.ts';
 
 class UpdateStation extends Update {
-    file: string;
+    file!: string;
 
     constructor() {
         super('stations');

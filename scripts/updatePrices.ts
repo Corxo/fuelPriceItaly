@@ -5,7 +5,7 @@ import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js';
 
 class UpdatePrices extends Update {
-    file: string;
+    file!: string;
     parser: any;
 
     constructor() {

@@ -1,13 +1,13 @@
 // Description: This script is used to update the database with the latest data from the MISE website.
 
 import sqlite3 from 'sqlite3';
-import * as dotenv from 'dotenv';
+import dotenv from 'dotenv';
 import axios from 'axios';
 
 export default class Update {
     table: string =  'prices';
-    db: sqlite3.Database;
-    url: string;
+    db!: sqlite3.Database;
+    url!: string;
 
     process = dotenv.config();
 
@@ -25,14 +25,16 @@ export default class Update {
                 this.url = "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv";
         }
 
-        this.db = new sqlite3.Database(this.process['env'].DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
-        this.db.run(this.getCreateTable(this.table) as string, (err: Error | null) => {
-            if (err)
-                throw new Error(err.message);
-        });
+        if (this.process.parsed) {
+            this.db = new sqlite3.Database(this.process.parsed.DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
+            this.db.run(this.getCreateTable(this.table) as string, (err: Error | null) => {
+                if (err)
+                    throw new Error(err.message);
+            });
+        }
     }
 
-    private getCreateTable(table): string | void {
+    private getCreateTable(table: string): string | void {
         switch (table) {
             case 'stations':
                 return `CREATE TABLE IF NOT EXISTS stations(
