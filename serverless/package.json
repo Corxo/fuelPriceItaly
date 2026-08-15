@@ -6,8 +6,8 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "cp .env dist/.env 2>/dev/null || true",
-    "dev:prices": "tsx updatePrices.ts",
-    "dev:stations": "tsx updateStations.ts",
+    "dev:prices": "tsx src/updatePrices.ts",
+    "dev:stations": "tsx src/updateStations.ts",
     "start:prices": "node dist/updatePrices.js",
     "start:stations": "node dist/updateStations.js"
   },

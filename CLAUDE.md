@@ -6,52 +6,53 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 OilPriceItaly: a Telegram bot that returns the 5 closest fuel stations (with prices and a map) given a user's location. Source data is Italy's MISE open data CSVs for stations and prices, ingested into a shared SQLite database.
 
-Repo is mid-refactor (branch `ts`, commit "convertion to TS"): the old `bot/` and `updateDB/` directories were moved to `src/bot/` and `src/serverless/` respectively. Git status still shows the old paths as deleted — this is expected, not something to restore.
-
 ## Structure
 
-Two independent npm packages sharing one SQLite DB file (path from `DB_PATH` env var):
+Two independent npm packages at repo root, sharing one SQLite DB file (path from `DB_PATH` env var), plus a `dba/` folder with the schema:
 
-- `src/bot/` — the Telegraf Telegram bot (`oilPriceItaly.ts` is the entrypoint, `Prices.ts` holds the DB query logic). Reads from the DB only.
-- `src/serverless/` — data ingestion. `update.ts` is a base `Update` class (creates tables if missing, fetches a MISE CSV over HTTP); `updateStations.ts` and `updatePrices.ts` extend it to parse the pipe-delimited CSV export and `REPLACE INTO` the DB. Meant to run on a schedule (cron), not as a long-lived process.
+- `bot/` — the Telegraf Telegram bot. Sources in `bot/src/`: `oilPriceItaly.ts` (entrypoint), `Prices.ts` (DB query logic). Reads from the DB only.
+- `serverless/` — data ingestion. Sources in `serverless/src/`: `update.ts` is a base `Update` class (creates tables if missing, fetches a MISE CSV over HTTP); `updateStations.ts` and `updatePrices.ts` extend it to parse the pipe-delimited CSV export and `REPLACE INTO` the DB. Meant to run on a schedule (cron), not as a long-lived process.
+- `dba/schema.sql` — DB schema reference (not auto-applied by any code; tables are also created idempotently by `Update`'s constructor).
 
-Each package builds independently (`tsc` to `dist/`) and has its own `tsconfig.json`, `package.json`, and env config.
+Each package builds independently (`tsc`, `rootDir: src` → `outDir: dist`, output stays flat in `dist/`) and has its own `tsconfig.json`, `package.json`, and `.env`.
+
+Relative imports between local files are written with a `.ts` extension (e.g. `import Prices from './Prices.ts'`) — both tsconfigs set `rewriteRelativeImportExtensions: true` (TS 5.7+), which rewrites these to `.js` in the compiled output while keeping `tsx`/editor navigation pointing at real source files.
 
 ## Commands
 
-Run from within `src/bot/` or `src/serverless/` (no root package.json / workspace setup):
+Run from within `bot/` or `serverless/` (no root package.json / workspace setup):
 
 ```bash
 npm install
 npm run build          # tsc -> dist/
 ```
 
-Bot (`src/bot/`):
+Bot (`bot/`):
 ```bash
-npm run dev             # tsx watch oilPriceItaly.ts TEST  (uses TELEGRAM_KEY_DEV)
-npm start                # node dist/oilPriceItaly.js       (uses TELEGRAM_KEY, prod)
+npm run dev              # tsx watch src/oilPriceItaly.ts TEST  (uses TELEGRAM_KEY_DEV)
+npm start                # node dist/oilPriceItaly.js            (uses TELEGRAM_KEY, prod)
 ```
-Bot config via `.env` (see `src/bot/.env.example`: `TELEGRAM_KEY`, `TELEGRAM_KEY_DEV`, `GEOAPIFY_TOKEN`, `DB_PATH`), loaded with `dotenv`, same pattern as `src/serverless/`.
+Config via `.env` (see `bot/.env.example`: `TELEGRAM_KEY`, `TELEGRAM_KEY_DEV`, `GEOAPIFY_TOKEN`, `DB_PATH`), loaded with `dotenv`.
 
-Serverless (`src/serverless/`):
+Serverless (`serverless/`):
 ```bash
-npm run dev:prices      # tsx updatePrices.ts
-npm run dev:stations    # tsx updateStations.ts
+npm run dev:prices      # tsx src/updatePrices.ts
+npm run dev:stations    # tsx src/updateStations.ts
 npm run start:prices    # node dist/updatePrices.js
 npm run start:stations  # node dist/updateStations.js
 ```
-Config via `.env` (see `src/serverless/.env.example`, just `DB_PATH`), loaded with `dotenv`.
+Config via `.env` (see `serverless/.env.example`, just `DB_PATH`), loaded with `dotenv`.
 
 There is no test runner configured in either package.
 
-## Data model (`schema.sql`)
+## Data model (`dba/schema.sql`)
 
 - `stations`: static station registry (`idStation` PK, brand/`flag`, address, lat/`log` as strings).
 - `prices`: time series of fuel prices per station (`idStation`, `fuel`, `price`, `isSelf`, `tsCattura`), uniqued on `(idStation, fuel, isSelf, tsCattura)` so re-running the updater is idempotent.
-- `users` / `flags`: present in `schema.sql` but not currently read/written by any code in `src/`.
+- `users` / `flags`: present in `dba/schema.sql` but not currently read/written by any code.
 
 `Prices.getPriceFromCloserStations` computes distance with an equirectangular approximation (inline SQL, no PostGIS/spatial index) and joins the closest N stations' latest price per fuel/isSelf combo.
 
-## Known deployment mismatch
+## Docker
 
-The Dockerfile at `src/bot/Dockerfile` still references the pre-refactor paths (`bot/...`, `updateDB/...`) relative to a build context expecting the old top-level `bot/` and `updateDB/` dirs, and `docker-compose.yml`'s build context/dockerfile path likewise predates the move to `src/`. These need updating together if you touch the Docker build — don't fix one without the other.
+`bot/Dockerfile` builds both packages into one image: it copies `bot/src` and `serverless/src` (as `/data/update/src`) separately, runs `npm install --force && npm run build` for each, then seeds the DB once at build time (`updatePrices.js` / `updateStations.js`) and crons the same two scripts daily at 8:10 alongside the long-running bot process. `bot/docker-compose.yml` builds with context `..` (repo root) and `dockerfile: bot/Dockerfile` — run `docker compose -f bot/docker-compose.yml up` from repo root.

@@ -18,7 +18,7 @@ import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 
 import Prices from './Prices.ts';
 
-dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '.env') });
+dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '../.env') });
 
 const TELEGRAM_KEY = process.env.TELEGRAM_KEY as string;
 const TELEGRAM_KEY_DEV = process.env.TELEGRAM_KEY_DEV as string;
@@ -26,8 +26,6 @@ const GEOAPIFY_TOKEN = process.env.GEOAPIFY_TOKEN as string;
 
 let bot: Telegraf;
 dayjs.extend(customParseFormat)
-
-const prices = new Prices();
 
 if (process.argv[2] && process.argv[2] == 'TEST') {
     bot = new Telegraf(TELEGRAM_KEY_DEV);
@@ -49,7 +47,9 @@ bot.on(message('location'), async ctx => {
         latitude: ctx.message.location.latitude,
         longitude: ctx.message.location.longitude
     }
-    try {
+  try {
+
+        const prices = new Prices();
 
         let data = await prices.getPriceFromCloserStations(userCoords.latitude, userCoords.longitude);
         let minPrices = prices.getLowerPricerPerStation(data);

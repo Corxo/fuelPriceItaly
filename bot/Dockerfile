@@ -13,16 +13,18 @@ RUN cp /usr/share/zoneinfo/Europe/Rome /etc/localtime
 #RUN timedatectl set-timezone Europe/Rome
 
 # --- bot ---
-COPY bot/oilPriceItaly.ts bot/Prices.ts bot/tsconfig.json bot/package.json /data/
+COPY bot/src /data/src
+COPY bot/tsconfig.json bot/package.json /data/
 COPY bot/.env /data/
 
 WORKDIR /data
 RUN npm install --force
 RUN npm run build
 
-# --- updateDB ---
-COPY updateDB/*.ts updateDB/tsconfig.json updateDB/package.json /data/update/
-COPY updateDB/.env /data/update/.env
+# --- serverless ---
+COPY serverless/src /data/update/src
+COPY serverless/tsconfig.json serverless/package.json /data/update/
+COPY serverless/.env /data/update/.env
 
 WORKDIR /data/update
 RUN npm install --force

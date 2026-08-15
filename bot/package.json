@@ -7,7 +7,7 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
     "postbuild": "cp .env dist/.env 2>/dev/null || true",
-    "dev": "tsx watch oilPriceItaly.ts TEST",
+    "dev": "tsx watch src/oilPriceItaly.ts TEST",
     "start": "node dist/oilPriceItaly.js"
   },
   "keywords": [],
