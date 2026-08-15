@@ -1,35 +1,33 @@
-import Notifier from './notifier.js';
 import Update from './update.js';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 
+dayjs.extend(customParseFormat)
+
 class UpdatePrices extends Update {
 
-    file;
-    parser;
+    file: string = '';
 
     constructor() {
         super('prices');
-        this.parser = dayjs;
-        this.parser.extend(customParseFormat)
     }
 
-    async main() {
+    async main(): Promise<void> {
         this.file = await this.getFile();
         this.updateDB()
     }
 
-    _parseDate(date){
-        return this.parser(date, "DD/MM/YYYY HH:mm:SS").format("YYYY-MM-DD HH:mm:ss")
+    _parseDate(date: string): string {
+        return dayjs(date, "DD/MM/YYYY HH:mm:SS").format("YYYY-MM-DD HH:mm:ss")
     }
 
-    prepareInsertValues() {
+    prepareInsertValues(): string {
         let arr = this.file.split("\n");
         arr = arr.splice(2, arr.length - 2)
 
-        let res = [];
-        arr.forEach(async i => {
-            i = i.split(";").map(i => i != 'NULL' ? i.replace(/\"/gi, "") : '');
+        let res: string[] = [];
+        arr.forEach(line => {
+            let i = line.split("|").map(v => v != 'NULL' ? v.replace(/\"/gi, "") : '');
             if (!!i[0]) {
                 let date = this._parseDate(i[4]);
                 let insert =    `(${i[0]},"${i[1]}",${i[2]},${i[3]},"${date}")`
@@ -40,20 +38,17 @@ class UpdatePrices extends Update {
         return res.join(",");
     }
 
-    updateDB() {
+    updateDB(): void {
         try {
             let inserts = this.prepareInsertValues();
             let query = `REPLACE INTO prices VALUES ${inserts}`;
-            this.db.run(query, (err) => {
+            this.db.run(query, (err: Error | null) => {
                 if (err)
-                    throw new Error(err)
+                    throw new Error(err.message)
             });
         } catch (err) {
             console.log(err)
         }
-
-        let notifier = new Notifier(0);
-        notifier.tableUpdateTerminated('prices');
     }
 
 }

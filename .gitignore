@@ -8,3 +8,5 @@ node_modules
 notifier.js
 
 .vscode
+
+.env

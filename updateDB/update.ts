@@ -1,34 +1,38 @@
 import sqlite3 from 'sqlite3';
-import { DB_PATH } from '../env.js';
-import get from 'axios';
+import axios from 'axios';
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 
+dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '.env') });
 
-export default class Update{
-    table;
-    db;
-    url;
+const DB_PATH = process.env.DB_PATH as string;
 
-    constructor(type){
+export type TableName = 'stations' | 'prices';
+
+export default class Update {
+    table: TableName;
+    db: sqlite3.Database;
+    url: string;
+
+    constructor(type: TableName) {
         this.table = type;
-        if(type != 'stations' && type != 'prices'){
-            console.error(`Type ${type} not handled`)
-        }
 
-
-        switch(type){
+        switch (type) {
             case 'stations':
                 this.url = "https://www.mise.gov.it/images/exportCSV/anagrafica_impianti_attivi.csv";
                 break;
             case 'prices':
-                this.url = "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv"
+                this.url = "https://www.mise.gov.it/images/exportCSV/prezzo_alle_8.csv";
+                break;
         }
 
         this.db = new sqlite3.Database(DB_PATH, sqlite3.OPEN_CREATE | sqlite3.OPEN_READWRITE);
         this.db.run(this._getCreateTable());
     }
 
-    _getCreateTable(){
-        switch(this.table){
+    _getCreateTable(): string {
+        switch (this.table) {
             case 'stations':
                 return `CREATE TABLE IF NOT EXISTS stations(
                     idStation int NOT NULL PRIMARY KEY,
@@ -53,19 +57,20 @@ export default class Update{
         }
     }
 
-    cleanTable(){
+    cleanTable(): void {
         this.db.run(`DELETE from ${this.table}`);
     }
 
-    async getFile() {
+    async getFile(): Promise<string> {
         try {
-            let res = await get({
+            let res = await axios<string>({
                 url: this.url,
                 responseType: 'text'
             })
             return res.data;
         } catch (err) {
             console.error(err)
+            return '';
         }
     }
 }

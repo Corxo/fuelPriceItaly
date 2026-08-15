@@ -5,8 +5,8 @@ services:
     container_name: 'oilPrice'
     image: oilprice
     build:
-      context: .
-      dockerfile: ./Dockerfile
+      context: ..
+      dockerfile: bot/Dockerfile
     restart: unless-stopped
     volumes:
       - oilPriceDb:/db/

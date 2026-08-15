@@ -2,10 +2,13 @@
   "name": "bot",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/oilPriceItaly.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon oilPriceItaly.js TEST"
+    "build": "tsc",
+    "postbuild": "cp env.js dist/env.js 2>/dev/null || true",
+    "dev": "tsx watch oilPriceItaly.ts TEST",
+    "start": "node dist/oilPriceItaly.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +21,9 @@
     "telegraf": "^4.7.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "@types/node": "^26.2.0",
+    "tsx": "^4.23.11",
+    "typescript": "^7.0.2"
   },
   "type": "module"
 }
