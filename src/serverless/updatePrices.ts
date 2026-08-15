@@ -1,4 +1,4 @@
-import Update from './update.js';
+import Update from './update.ts';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 

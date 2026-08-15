@@ -1,7 +1,11 @@
 import sqlite3 from "sqlite3";
-import {
-    DB_PATH
-} from "./env.js";
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '.env') });
+
+const DB_PATH = process.env.DB_PATH as string;
 
 interface PriceRow {
     idStation: number;
@@ -76,12 +80,12 @@ export default class Prices {
                 if (err)
                     rej(err);
                 this.pricesFromCloserStations = rows;
-                res(this._parseData(rows));
+                res(this.parseData(rows));
             })
         );
     }
 
-    _parseData(data: PriceRow[]): Record<number, StationData> {
+    private parseData(data: PriceRow[]): Record<number, StationData> {
         let d: Record<number, StationData> = {};
         data.forEach(r => {
             if (!d[r.idStation]) {

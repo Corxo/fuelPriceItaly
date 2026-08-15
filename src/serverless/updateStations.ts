@@ -1,4 +1,4 @@
-import Update from './update.js';
+import Update from './update.ts';
 
 class UpdateStation extends Update {
 

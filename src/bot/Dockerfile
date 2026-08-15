@@ -13,8 +13,8 @@ RUN cp /usr/share/zoneinfo/Europe/Rome /etc/localtime
 #RUN timedatectl set-timezone Europe/Rome
 
 # --- bot ---
-COPY bot/oilPriceItaly.ts bot/Prices.ts bot/env.d.ts bot/tsconfig.json bot/package.json /data/
-COPY bot/env.js /data/
+COPY bot/oilPriceItaly.ts bot/Prices.ts bot/tsconfig.json bot/package.json /data/
+COPY bot/.env /data/
 
 WORKDIR /data
 RUN npm install --force

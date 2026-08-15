@@ -10,15 +10,19 @@ import {
 import {
     message
 } from 'telegraf/filters';
-import {
-    TELEGRAM_KEY,
-    TELEGRAM_KEY_DEV,
-    GEOAPIFY_TOKEN
-} from './env.js'
+import dotenv from 'dotenv';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat.js'
 
-import Prices from './Prices.js';
+import Prices from './Prices.ts';
+
+dotenv.config({ path: path.join(path.dirname(fileURLToPath(import.meta.url)), '.env') });
+
+const TELEGRAM_KEY = process.env.TELEGRAM_KEY as string;
+const TELEGRAM_KEY_DEV = process.env.TELEGRAM_KEY_DEV as string;
+const GEOAPIFY_TOKEN = process.env.GEOAPIFY_TOKEN as string;
 
 let bot: Telegraf;
 dayjs.extend(customParseFormat)

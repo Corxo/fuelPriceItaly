@@ -31,7 +31,7 @@ Bot (`src/bot/`):
 npm run dev             # tsx watch oilPriceItaly.ts TEST  (uses TELEGRAM_KEY_DEV)
 npm start                # node dist/oilPriceItaly.js       (uses TELEGRAM_KEY, prod)
 ```
-Bot config comes from `env.js` (gitignored, not committed — must export `TELEGRAM_KEY`, `TELEGRAM_KEY_DEV`, `GEOAPIFY_TOKEN`, `DB_PATH`), imported directly as `./env.js` — there is no `.env.example` for the bot.
+Bot config via `.env` (see `src/bot/.env.example`: `TELEGRAM_KEY`, `TELEGRAM_KEY_DEV`, `GEOAPIFY_TOKEN`, `DB_PATH`), loaded with `dotenv`, same pattern as `src/serverless/`.
 
 Serverless (`src/serverless/`):
 ```bash

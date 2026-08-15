@@ -6,7 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "tsc",
-    "postbuild": "cp env.js dist/env.js 2>/dev/null || true",
+    "postbuild": "cp .env dist/.env 2>/dev/null || true",
     "dev": "tsx watch oilPriceItaly.ts TEST",
     "start": "node dist/oilPriceItaly.js"
   },
@@ -16,6 +16,7 @@
   "dependencies": {
     "axios": "^1.2.5",
     "dayjs": "^1.11.7",
+    "dotenv": "^16.6.1",
     "nodemailer": "^6.9.1",
     "sqlite3": "^5.1.4",
     "telegraf": "^4.7.0"
